@@ -16,7 +16,7 @@ kaggle competitions download -c digit-recognizer
 unzip digit-recognizer.zip -d data/
 ```
 
-## Option 2 — téléchargement manuel
+## Option 2: téléchargement manuel
 Télécharger `train.csv` directement depuis la page de la compétition
 [Digit Recognizer](https://www.kaggle.com/c/digit-recognizer/data) et le
 placer dans ce dossier `data/`.
