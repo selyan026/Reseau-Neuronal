@@ -1,66 +1,46 @@
-# Réseau neuronal — Reconnaissance de chiffres manuscrits
+# Réseau neuronal : reconnaissance de chiffres manuscrits
 
-Implémentation **from scratch** (NumPy uniquement, aucun framework de deep
-learning type PyTorch/TensorFlow) d'un réseau de neurones pour classifier
-les chiffres manuscrits du dataset MNIST.
+Réseau de neurones implémenté entièrement en NumPy, sans framework de deep
+learning (pas de PyTorch, TensorFlow ou Keras). Le modèle apprend à
+reconnaître des chiffres manuscrits (0 à 9) à partir d'images 28x28 pixels
+issues du dataset MNIST, avec une précision finale de 90.7% sur les données
+de test.
 
-## Pourquoi ce projet
+Toute la mécanique d'apprentissage (propagation avant, rétropropagation,
+descente de gradient) est codée à la main, sans bibliothèque de machine
+learning haut niveau. L'objectif était de comprendre en détail le
+fonctionnement interne d'un réseau de neurones plutôt que d'utiliser une
+implémentation existante.
 
-Je travaille dans les systèmes/réseaux, en évoluant vers la cybersécurité
-(alternance en cybersécurité à partir de septembre 2026). Or une bonne
-partie des outils que je manipule ou dont j'entends parler au quotidien —
-EDR, SIEM, détection d'anomalies — s'appuient de plus en plus sur du machine
-learning pour repérer des comportements suspects. Je me servais de ces
-outils comme des boîtes noires, sans vraiment comprendre ce qu'il y avait
-derrière le mot "IA" qu'on met un peu partout.
-
-Ce projet est parti de cette frustration : plutôt que d'utiliser une
-librairie haut niveau (scikit-learn, Keras...) qui masque tout le
-fonctionnement interne, j'ai voulu **réimplémenter un réseau de neurones à
-la main**, sans aucun framework de deep learning, pour comprendre
-concrètement ce qui se passe entre l'entrée (une image) et la sortie (une
-prédiction) : d'où viennent les poids, comment ils sont corrigés, pourquoi
-on utilise telle fonction plutôt qu'une autre.
-
-> Pour une explication détaillée et pédagogique du fonctionnement de
-> l'entraînement (forward propagation, rétropropagation, descente de
-> gradient...), voir [`ENTRAINEMENT.md`](ENTRAINEMENT.md).
-
-## Ce que ce projet m'a apporté
-
-- **NumPy en profondeur** : manipuler des matrices, vectoriser des calculs
-  (éviter les boucles Python explicites sur des milliers d'images),
-  comprendre le broadcasting — des réflexes utiles bien au-delà du ML,
-  y compris pour du traitement de données ou des scripts d'automatisation.
-- **Pandas** : chargement, nettoyage et mise en forme d'un dataset réel
-  (lecture CSV, conversion en tableaux NumPy, séparation
-  entraînement/test).
-- **Les bases mathématiques du machine learning** : algèbre linéaire
-  (produits matriciels, transposées), calcul différentiel (dérivées
-  partielles, règle de la chaîne appliquée à la rétropropagation), et leur
-  traduction directe en code.
-- **Une meilleure lecture des outils de sécurité basés sur l'IA** :
-  comprendre comment un modèle "apprend" à partir de données rend beaucoup
-  plus lisibles les discussions autour des faux positifs, du besoin de
-  données d'entraînement représentatives, ou des limites d'un modèle de
-  détection.
-- **De bonnes pratiques de code**, au-delà du script qui marche une fois :
-  architecture orientée objet, principes SOLID, tests unitaires, gestion de
-  version avec Git — pour repartir de ce projet plus tard sans devoir tout
-  relire.
+Pour une explication pas à pas du fonctionnement de l'entraînement (calcul
+des gradients, rôle de chaque fonction, intuition mathématique), voir
+[ENTRAINEMENT.md](ENTRAINEMENT.md).
 
 ## Résultats
 
 | Configuration | Précision (test) |
 |---|---|
-| 1 couche cachée, 500 itérations, alpha fixe | ~83–86% |
-| 1 couche cachée, 1000 itérations, alpha fixe | ~86–88% |
-| 1 couche cachée, 500 itérations, alpha adaptatif (1 → 0.1) | **90.7%** |
+| 1 couche cachée, 500 itérations, taux d'apprentissage fixe | 83 à 86% |
+| 1 couche cachée, 1000 itérations, taux d'apprentissage fixe | 86 à 88% |
+| 1 couche cachée, 500 itérations, taux d'apprentissage adaptatif (1 puis 0.1) | 90.7% |
+
+## Ce que ce projet a permis d'approfondir
+
+* **NumPy** : manipulation matricielle, vectorisation des calculs pour
+  éviter les boucles Python sur des milliers d'images, broadcasting.
+* **Pandas** : chargement et préparation d'un dataset réel (lecture CSV,
+  conversion en tableaux NumPy, séparation entraînement/test).
+* **Les fondements mathématiques du machine learning** : algèbre linéaire
+  (produits matriciels, transposées) et calcul différentiel (dérivées
+  partielles, règle de la chaîne appliquée à la rétropropagation),
+  traduits directement en code.
+* **Des pratiques de développement structurées** : architecture orientée
+  objet, principes SOLID, tests unitaires, gestion de version avec Git.
 
 ## Architecture du code
 
-Le code a été structuré autour de quelques principes SOLID et design
-patterns, pour rester lisible et facilement extensible :
+Le code est organisé autour de quelques principes SOLID et design patterns
+pour rester lisible et facilement extensible.
 
 ```
 src/
@@ -68,29 +48,30 @@ src/
 ├── layers.py          # DenseLayer : une couche entièrement connectée
 ├── losses.py          # CategoricalCrossEntropy
 ├── optimizers.py       # SGD, StepDecayOptimizer (Strategy + Decorator Pattern)
-├── model.py            # NeuralNetwork : orchestre couches/loss/optimizer
+├── model.py            # NeuralNetwork : orchestre couches, coût et optimiseur
 ├── data_loader.py      # Chargement et préparation du dataset MNIST
 └── visualization.py     # Courbes de précision, affichage de prédictions
 ```
 
-**Pourquoi cette architecture ?**
+**Principes appliqués**
 
-- **Single Responsibility** : chaque classe a un seul rôle. `DenseLayer` ne
-  connaît que ses poids, `MnistDataLoader` ne fait que charger les données,
-  `NeuralNetwork` orchestre sans jamais manipuler directement des poids.
-- **Open/Closed** : ajouter une nouvelle fonction d'activation (Sigmoid,
-  Tanh...) ou un nouvel optimiseur ne demande de modifier aucune classe
-  existante — seulement d'en créer une nouvelle qui respecte l'interface
+* **Responsabilité unique** : chaque classe a un seul rôle. `DenseLayer` ne
+  connaît que ses propres poids, `MnistDataLoader` ne fait que charger les
+  données, `NeuralNetwork` orchestre l'ensemble sans manipuler directement
+  les poids.
+* **Ouvert/fermé** : ajouter une nouvelle fonction d'activation (Sigmoid,
+  Tanh) ou un nouvel optimiseur ne nécessite de modifier aucune classe
+  existante, seulement d'en créer une nouvelle respectant l'interface
   `Activation` ou `Optimizer`.
-- **Dependency Inversion** : `NeuralNetwork` dépend d'abstractions
-  (`Activation`, `Optimizer`, la fonction de coût), jamais d'une
-  implémentation concrète codée en dur.
-- **Strategy Pattern** : `ReLU`/`Softmax` d'un côté, `SGD` de l'autre, sont
-  interchangeables sans changer le reste du code.
-- **Decorator Pattern** : `StepDecayOptimizer` enrichit un `SGD` existant
-  (réduction du taux d'apprentissage après N itérations) sans le modifier
-  ni le dupliquer. C'est la stratégie "alpha=1 puis alpha=0.1" qui a donné
-  le meilleur résultat expérimental (90.7%).
+* **Inversion des dépendances** : `NeuralNetwork` dépend d'abstractions
+  (`Activation`, `Optimizer`, fonction de coût), jamais d'une implémentation
+  concrète codée en dur.
+* **Strategy Pattern** : `ReLU`/`Softmax` d'un côté, `SGD` de l'autre, sont
+  interchangeables sans modifier le reste du code.
+* **Decorator Pattern** : `StepDecayOptimizer` enrichit un `SGD` existant
+  (réduction du taux d'apprentissage après un certain nombre d'itérations)
+  sans le modifier ni le dupliquer. C'est cette stratégie qui a donné le
+  meilleur résultat expérimental (90.7%).
 
 ## Installation
 
@@ -102,7 +83,8 @@ source venv/bin/activate   # sous Windows : venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Récupérer ensuite le dataset MNIST — voir [`data/README.md`](data/README.md).
+Le dataset MNIST doit être récupéré séparément, voir
+[data/README.md](data/README.md).
 
 ## Utilisation
 
@@ -110,11 +92,12 @@ Récupérer ensuite le dataset MNIST — voir [`data/README.md`](data/README.md)
 python main.py
 ```
 
-Cela entraîne le modèle sur 500 itérations, affiche la courbe de précision,
-la précision finale sur les données de test, et un exemple de prédiction.
+Cette commande entraîne le modèle sur 500 itérations, affiche la courbe de
+précision, la précision finale sur les données de test, et un exemple de
+prédiction.
 
-Les hyperparamètres (nombre d'itérations, alpha, moment du "decay"...) sont
-configurables en haut de `main.py`.
+Les hyperparamètres (nombre d'itérations, taux d'apprentissage, moment du
+changement de taux) sont configurables en haut de `main.py`.
 
 ## Tests
 
@@ -122,10 +105,10 @@ configurables en haut de `main.py`.
 pytest tests/ -v
 ```
 
-## Structure complète du dépôt
+## Structure du dépôt
 
 ```
-reseau-neuronal-mnist/
+Reseau-Neuronal/
 ├── README.md
 ├── ENTRAINEMENT.md
 ├── requirements.txt
@@ -148,4 +131,4 @@ reseau-neuronal-mnist/
 
 ## Licence
 
-MIT — voir [`LICENSE`](LICENSE).
+MIT, voir [LICENSE](LICENSE).
