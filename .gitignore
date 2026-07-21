@@ -1,0 +1,21 @@
+# Données (trop lourdes pour git, à télécharger séparément)
+data/*.csv
+data/*.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+venv/
+.venv/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Environnements / IDE
+.vscode/
+.idea/
+.DS_Store
