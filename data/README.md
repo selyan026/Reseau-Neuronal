@@ -5,7 +5,7 @@ Ce projet utilise le dataset **Digit Recognizer** (MNIST) de Kaggle.
 Le fichier `train.csv` n'est pas versionné dans ce dépôt (trop volumineux).
 Pour l'obtenir :
 
-## Option 1 — via Kaggle
+## Option 1: via Kaggle
 1. Créer un compte sur [kaggle.com](https://www.kaggle.com)
 2. Récupérer une clé API : `Compte > Create New API Token` (télécharge `kaggle.json`)
 3. Placer `kaggle.json` dans `~/.kaggle/`
